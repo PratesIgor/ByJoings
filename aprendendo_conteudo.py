@@ -13,7 +13,7 @@ url_queue = deque([base_url])
 # Inicialize uma lista para armazenar todas as URLs já visitadas
 visited_urls = set()
 
-# Inicialize uma lista para armazenar todos os textos coletados
+# Inicialize uma lista para armazenar todos os textos  coletados
 collected_text = []
 
 # Função para extrair links de uma página
