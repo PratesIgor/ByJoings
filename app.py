@@ -3,42 +3,45 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 # Simulando uma lista de tarefas
-tasks = [{'id': 1, 'title': 'Comprar leite', 'done': False},
-         {'id': 2, 'title': 'Ir à academia', 'done': True}]
+equipamentos = [{'id': 1, 'equipamento': 'NT', 'valor': '255.57', 'serial': '123', 'departamento': 'MKT'},
+         {'id': 2, 'equipamento': 'CD', 'valor': '25.47', 'serial': '1234', 'departamento': 'TI'},
+         {'id': 3, 'equipamento': 'AE', 'valor': '38.57', 'serial': '12', 'departamento': 'RH'},
+         {'id': 4, 'equipamento': 'WF', 'valor': '25', 'serial': '126', 'departamento': 'DP'},
+         {'id': 5, 'equipamento': 'GT', 'valor': '260', 'serial': '1289', 'departamento': 'COM'}]
 
-@app.route('/tasks', methods=['GET'])
-def get_tasks():
-    return jsonify({'tasks': tasks})
+@app.route('/equipamentos', methods=['GET'])
+def get_equipamentos():
+    return jsonify({'equipamentos': equipamentos})
 
-@app.route('/tasks', methods=['POST'])
-def create_task():
-    new_task = request.json
-    new_task['id'] = len(tasks) + 1
-    tasks.append(new_task)
-    return jsonify({'task': new_task}), 201
+@app.route('/equipamentos', methods=['POST'])
+def create_equipamento():
+    new_equipamento = request.json
+    new_equipamento['id'] = len(equipamentos) + 1
+    equipamentos.append(new_equipamento)
+    return jsonify({'equipamentos': new_equipamento}), 201
 
-@app.route('/tasks/<int:task_id>', methods=['GET'])
-def get_task(task_id):
-    task = next((task for task in tasks if task['id'] == task_id), None)
-    if task is None:
+@app.route('/equipamentos/id/<int:equipamento_id>', methods=['GET'])
+def get_equipamento(equipamento_id):
+    equipamento = next((equipamento for equipamento in equipamentos if equipamento['id'] == equipamento_id), None)
+    if equipamento is None:
         return jsonify({'error': 'Tarefa não encontrada'}), 404
-    return jsonify({'task': task})
+    return jsonify({'equipamentos': equipamento})
 
-@app.route('/tasks/<int:task_id>', methods=['PUT'])
-def update_task(task_id):
-    task = next((task for task in tasks if task['id'] == task_id), None)
-    if task is None:
+@app.route('/equipamentos/id/<int:equipamento_id>', methods=['PUT'])
+def update_equipamento(equipamento_id):
+    equipamento = next((equipamento for equipamento in equipamentos if equipamento['id'] == equipamento_id), None)
+    if equipamento is None:
         return jsonify({'error': 'Tarefa não encontrada'}), 404
-    updated_task = request.json
-    task.update(updated_task)
-    return jsonify({'task': task})
+    updated_equipamento = request.json
+    equipamento.update(updated_equipamento)
+    return jsonify({'equipamentos': equipamento})
 
-@app.route('/tasks/<int:task_id>', methods=['DELETE'])
-def delete_task(task_id):
-    task = next((task for task in tasks if task['id'] == task_id), None)
-    if task is None:
+@app.route('/equipamentos/id/<int:equipamento_id>', methods=['DELETE'])
+def delete_equipamento(equipamento_id):
+    equipamento = next((equipamento for equipamento in equipamentos if equipamento['id'] == equipamento_id), None)
+    if equipamento is None:
         return jsonify({'error': 'Tarefa não encontrada'}), 404
-    tasks.remove(task)
+    equipamentos.remove(equipamento)
     return jsonify({'result': True})
 
 if __name__ == '__main__':

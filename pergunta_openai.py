@@ -1,7 +1,7 @@
 import openai
 
 # Chave da API do GPT-3 (substitua pela sua chave)
-api_key = "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"
+api_key = "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"
 
 # Inicialize o cliente do GPT-3
 openai.api_key = api_key
