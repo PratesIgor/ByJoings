@@ -9,6 +9,7 @@ app = Flask(__name__)
 
 # Cria lista chamada equipamentos
 equipamentos = []
+total = 0
 
 # Classe para validação marshmawllow (validação dos campos únicos)
 class EquipamentoSchema(Schema):
@@ -17,6 +18,9 @@ class EquipamentoSchema(Schema):
     valor = fields.Float(required=True, validate=validate.Range(min=0))  # Valor é obrigatório e deve ser um número não negativo
     serial = fields.Str(required=True, validate=validate.Length(min=1))  # Serial é obrigatório e deve ter pelo menos 1 caractere
     departamento = fields.Str(required=True, validate=validate.Length(min=1))  # Departamento é obrigatório e deve ter pelo menos 1 caractere
+    nome_responsavel = fields.Str(required=True, validate=validate.Length(min=1)) # Nome do responsável é obrigatório e deve ter pelo menos 1 caractere
+    telefone = fields.Str(required=True, validate=validate.Length(min=1))  # Telefone é obrigatório e deve ter pelo menos 1 caractere
+    email = fields.Email(required=True)  # Email é obrigatório e deve ter pelo menos 1 caractere
 
     # Restrição dos campos para não permitir atualização de campos inexistentes
     def __init__(self, **kwargs):
@@ -25,30 +29,51 @@ class EquipamentoSchema(Schema):
             "equipamento": self.fields["equipamento"],
             "valor": self.fields["valor"],
             "serial": self.fields["serial"],
-            "departamento": self.fields["departamento"]
+            "departamento": self.fields["departamento"],
+            "nome_responsavel": self.fields["nome_responsavel"],
+            "telefone": self.fields["telefone"],
+            "email": self.fields["email"]
+
         }
 
-# Abre arquivo para o modo leitura
+# Método para carregar os equipamentos do arquivo JSON e ordená-los
 def load_equipamentos_from_json():
     try:
-        with open("equipamentos.json", "r") as bd_json:
-            return json.load(bd_json)
+        with open("Equipamentos_API/equipamentos.json", "r") as bd_json:
+            equipamentos = json.load(bd_json)
+            equipamentos_sorted = sorted(equipamentos, key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor']))
+            return equipamentos_sorted
     except (FileNotFoundError, json.decoder.JSONDecodeError):
         return []
 
 # Cria arquivo json para armazenamento
 def save_equipamentos_to_json(equipamentos):
-    with open("equipamentos.json", "w") as bd_json:
+    with open("Equipamentos_API/equipamentos.json", "w") as bd_json:
         json.dump(equipamentos, bd_json)
 
-# Método GET para listar registros cadastrados até o momento
+# Ordenação para listar usando o método get
+def custom_sort(equipamento):
+    return (
+        equipamento['id'],
+        equipamento['serial'],
+        equipamento['nome_responsavel'],
+        equipamento['telefone'],
+        equipamento['email'],
+        equipamento['equipamento'],
+        equipamento['departamento'],
+        equipamento['valor']
+    )
+
+# Método GET para consultar todos os equipamentos
 @app.route('/equipamentos', methods=['GET'])
 def get_equipamentos():
     try:
-        equipamentos = load_equipamentos_from_json()
-        return jsonify({'equipamentos': equipamentos})
+        equipamentos_sorted = sorted(equipamentos, key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor']))
+        total_items = len(equipamentos_sorted)
+        response = {'equipamentos': equipamentos_sorted, 'total': total_items}
+        return jsonify(response)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}, 500)
 
 # Método POST para criar um equipamento
 @app.route('/equipamentos', methods=['POST'])
@@ -60,9 +85,13 @@ def create_equipamento():
             'equipamento': data['equipamento'],
             'valor': data['valor'],
             'serial': data['serial'],
-            'departamento': data['departamento']
+            'departamento': data['departamento'],
+            "nome_responsavel": data["nome_responsavel"],
+            "telefone": data["telefone"],
+            "email": data["email"]
         }
         equipamentos.append(new_equipamento)
+        equipamentos.sort(key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor'])) #ordena inserção
         save_equipamentos_to_json(equipamentos)
         return jsonify({'equipamento': new_equipamento}), 201
     except ValidationError as e:
@@ -75,6 +104,17 @@ def get_equipamento(equipamento_id):
     if equipamento is None:
         return jsonify({'error': 'Equipamento não encontrado'}), 404
     return jsonify({'equipamento': equipamento})
+
+# Método GET para consultar um equipamento por Email
+@app.route('/equipamentos/email/<string:email>', methods=['GET'])
+def get_equipamentos_por_email(email):
+    equipamentos_por_email = [equipamento for equipamento in equipamentos if equipamento['email'] == email]
+    total_items = len(equipamentos_por_email)
+    if not equipamentos_por_email:
+        return jsonify({'error': 'Nenhum equipamento encontrado com o email fornecido'}), 404
+    response = {'equipamentos': equipamentos_por_email, 'total': total_items}
+    return jsonify(response)
+
 
 # Método PUT para atualizar um equipamento por ID
 @app.route('/equipamentos/id/<int:equipamento_id>', methods=['PUT'])
@@ -109,4 +149,4 @@ def delete_equipamento(equipamento_id):
 # Carrega servidor flask e arquivo com os registros
 if __name__ == '__main__':
     equipamentos = load_equipamentos_from_json()
-    app.run(debug= True)
+    app.run(host='0.0.0.0', port=5000)
