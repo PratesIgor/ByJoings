@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, Request
 
 app = Flask(__name__)
 
@@ -20,18 +20,19 @@ def create_equipamento():
     equipamentos.append(new_equipamento)
     return jsonify({'equipamentos': new_equipamento}), 201
 
+
 @app.route('/equipamentos/id/<int:equipamento_id>', methods=['GET'])
 def get_equipamento(equipamento_id):
     equipamento = next((equipamento for equipamento in equipamentos if equipamento['id'] == equipamento_id), None)
     if equipamento is None:
-        return jsonify({'error': 'Tarefa não encontrada'}), 404
+        return jsonify({'error': 'Equipamento não encontrada'}), 404
     return jsonify({'equipamentos': equipamento})
 
 @app.route('/equipamentos/id/<int:equipamento_id>', methods=['PUT'])
 def update_equipamento(equipamento_id):
     equipamento = next((equipamento for equipamento in equipamentos if equipamento['id'] == equipamento_id), None)
     if equipamento is None:
-        return jsonify({'error': 'Tarefa não encontrada'}), 404
+        return jsonify({'error': 'Equipamento não encontrada'}), 404
     updated_equipamento = request.json
     equipamento.update(updated_equipamento)
     return jsonify({'equipamentos': equipamento})
@@ -40,7 +41,7 @@ def update_equipamento(equipamento_id):
 def delete_equipamento(equipamento_id):
     equipamento = next((equipamento for equipamento in equipamentos if equipamento['id'] == equipamento_id), None)
     if equipamento is None:
-        return jsonify({'error': 'Tarefa não encontrada'}), 404
+        return jsonify({'error': 'Equipamento não encontrada'}), 404
     equipamentos.remove(equipamento)
     return jsonify({'result': True})
 
