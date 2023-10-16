@@ -2,6 +2,9 @@ from flask import Flask, jsonify, request
 from marshmallow import Schema, fields, validate
 from marshmallow import ValidationError
 import json
+import platform
+import getpass
+from datetime import datetime
 
 # Inicia aplicação flask
 
@@ -21,6 +24,9 @@ class EquipamentoSchema(Schema):
     nome_responsavel = fields.Str(required=True, validate=validate.Length(min=1)) # Nome do responsável é obrigatório e deve ter pelo menos 1 caractere
     telefone = fields.Str(required=True, validate=validate.Length(min=1))  # Telefone é obrigatório e deve ter pelo menos 1 caractere
     email = fields.Email(required=True)  # Email é obrigatório e deve ter pelo menos 1 caractere
+    data_hora = fields.DateTime(dump_only=True) # Atualiza data e hora automaticamente
+    terminal = fields.Str(dump_only=True) # Atualiza terminal automaticamente
+    usuario = fields.Str(dump_only=True) # Atualiza usuário automaticamente
 
     # Restrição dos campos para não permitir atualização de campos inexistentes
     def __init__(self, **kwargs):
@@ -33,7 +39,6 @@ class EquipamentoSchema(Schema):
             "nome_responsavel": self.fields["nome_responsavel"],
             "telefone": self.fields["telefone"],
             "email": self.fields["email"]
-
         }
 
 # Método para carregar os equipamentos do arquivo JSON e ordená-los
@@ -41,10 +46,43 @@ def load_equipamentos_from_json():
     try:
         with open("Equipamentos_API/equipamentos.json", "r") as bd_json:
             equipamentos = json.load(bd_json)
-            equipamentos_sorted = sorted(equipamentos, key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor']))
+            equipamentos_sorted = sorted(equipamentos, key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor'], x['data_hora'], x['terminal'], x['usuario']))
             return equipamentos_sorted
     except (FileNotFoundError, json.decoder.JSONDecodeError):
         return []
+# Método para adição de valores padrões nos registros já existentes. - comentado porque utilizei somente para preencher os registros anteriores.
+# def load_equipamentos_from_json():
+#     try:
+#         with open("Equipamentos_API/equipamentos.json", "r") as bd_json:
+#             equipamentos = json.load(bd_json)
+
+#             # Preencha as chaves ausentes com valores padrão
+#             for equipamento in equipamentos:
+#                 equipamento.setdefault('terminal', 'DESKTOP-U5FEPA1')
+#                 equipamento.setdefault('usuario', 'Jones')
+#                 equipamento.setdefault('data_hora', '2023-10-16 09:35:23.090961')
+
+#             equipamentos_sorted = sorted(equipamentos, key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor'], x['data_hora'], x['terminal'], x['usuario']))
+#             return equipamentos_sorted
+#     except (FileNotFoundError, json.decoder.JSONDecodeError):
+#         return []
+
+# Crie um novo equipamento com os valores fornecidos e valores gerados automaticamente
+def make_equipamento(self, data):
+        return {
+            'id': len(equipamentos) + 1,
+            'equipamento': data['equipamento'],
+            'valor': data['valor'],
+            'serial': data['serial'],
+            'departamento': data['departamento'],
+            'nome_responsavel': data['nome_responsavel'],
+            'telefone': data['telefone'],
+            'email': data['email'],
+            'data_hora': datetime.now(),
+            'terminal': platform.node(),
+            'usuario': getpass.getuser()
+        }
+
 
 # Cria arquivo json para armazenamento
 def save_equipamentos_to_json(equipamentos):
@@ -61,14 +99,17 @@ def custom_sort(equipamento):
         equipamento['email'],
         equipamento['equipamento'],
         equipamento['departamento'],
-        equipamento['valor']
+        equipamento['valor'],
+        equipamento['data_hora'],
+        equipamento['terminal'],
+        equipamento['usuario']
     )
 
 # Método GET para consultar todos os equipamentos
 @app.route('/equipamentos', methods=['GET'])
 def get_equipamentos():
     try:
-        equipamentos_sorted = sorted(equipamentos, key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor']))
+        equipamentos_sorted = sorted(equipamentos, key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor'], x['data_hora'], x['terminal'], x['usuario']))
         total_items = len(equipamentos_sorted)
         response = {'equipamentos': equipamentos_sorted, 'total': total_items}
         return jsonify(response)
@@ -80,22 +121,27 @@ def get_equipamentos():
 def create_equipamento():
     try:
         data = EquipamentoSchema().load(request.json)
+        # Crie um novo equipamento com os valores fornecidos e valores gerados automaticamente
         new_equipamento = {
             'id': len(equipamentos) + 1,
             'equipamento': data['equipamento'],
             'valor': data['valor'],
             'serial': data['serial'],
             'departamento': data['departamento'],
-            "nome_responsavel": data["nome_responsavel"],
-            "telefone": data["telefone"],
-            "email": data["email"]
+            'nome_responsavel': data['nome_responsavel'],
+            'telefone': data['telefone'],
+            'email': data['email'],
+            'data_hora': datetime.now().isoformat(),
+            'terminal': platform.node(),
+            'usuario': getpass.getuser()
         }
         equipamentos.append(new_equipamento)
-        equipamentos.sort(key=lambda x: (x['id'], x['serial'], x['nome_responsavel'], x['telefone'], x['email'], x['equipamento'], x['departamento'], x['valor'])) #ordena inserção
         save_equipamentos_to_json(equipamentos)
         return jsonify({'equipamento': new_equipamento}), 201
     except ValidationError as e:
-        return jsonify({'error': str(e)}, 400)
+        return jsonify({'error': 'Erro de validação', 'messages': e.messages}), 400
+    except Exception as e:
+        return jsonify({'error': 'Erro interno no servidor', 'message': str(e)}), 500
     
 # Método GET para consultar um equipamento por ID
 @app.route('/equipamentos/id/<int:equipamento_id>', methods=['GET'])
