@@ -1,0 +1,25 @@
+CREATE DATABASE `equipamentos`
+
+CREATE TABLE `equipamento` (
+ `id` int(10) NOT NULL,
+ `equipamento` varchar(30) NOT NULL,
+ `valor` int(10) NOT NULL,
+ `serial` int(20) NOT NULL,
+ `departamento` varchar(10) NOT NULL,
+ `nome_responsavel` varchar(30) NOT NULL,
+ `telefone` varchar(15) NOT NULL,
+ `data_hora` timestamp(6) NOT NULL DEFAULT current_timestamp(6) ON UPDATE current_timestamp(6),
+ `terminal` varchar(50) NOT NULL,
+ `usuario` varchar(50) NOT NULL,
+ `email` varchar(50) DEFAULT NULL
+)
+
+CREATE TABLE `usuarios` (
+ `id` int(10) DEFAULT NULL,
+ `email` varchar(50) DEFAULT NULL,
+ `login` varchar(30) DEFAULT NULL,
+ `senha` int(8) DEFAULT NULL,
+ `data` timestamp(6) NULL DEFAULT NULL,
+ `terminal_usuario` varchar(200) DEFAULT NULL,
+ UNIQUE KEY `id` (`id`)
+)
