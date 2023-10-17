@@ -16,14 +16,17 @@ def conectaBD ():
 def consulta_usuario_por_login(login):
     meubd, cursor = conectaBD()
 
-    query = "SELECT * FROM USUARIOS WHERE login = %s"
+    query = "SELECT login, email, senha FROM USUARIOS WHERE login = %s"
     cursor.execute(query, (login,))
 
     usuario = cursor.fetchone()
 
     meubd.close()
 
+    print("Resultado da consulta:", usuario)
+
     return usuario
+
 
 def insere_usuario(id, email, login, senha, data, terminal_usuario):
     try:

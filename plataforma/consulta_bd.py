@@ -11,7 +11,7 @@ lista = {}
 
 opcao = opcoes()
 
-while opcao >=1 and opcao <= 6:
+while opcao >=1 and opcao <= 8:
     if opcao == 1:
         preencherInventario()
     elif opcao == 2:
@@ -30,7 +30,7 @@ while opcao >=1 and opcao <= 6:
         email = input('Digite o e-mail: ')
         login = input('Digite o login: ')
         senha = input('Digite a senha: ')
-        data = datetime.now().isoformat
+        data = datetime.now().isoformat()
         terminal_usuario = (getpass.getuser() + platform.node())
         insere_usuario(id, email, login, senha, data, terminal_usuario)
     elif opcao == 8:
