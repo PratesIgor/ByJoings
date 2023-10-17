@@ -23,9 +23,12 @@ def consulta_usuario_por_login(login):
 
     meubd.close()
 
-    print("Resultado da consulta:", usuario)
-
-    return usuario
+    if usuario is not None:
+        print("Resultado da consulta:", usuario)
+        return usuario
+    else:
+        print("Nenhum usuário encontrado com o login fornecido.")
+        return None  # Retorna None em vez de uma mensagem de aviso
 
 
 def insere_usuario(id, email, login, senha, data, terminal_usuario):
