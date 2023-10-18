@@ -13,25 +13,25 @@ def conectaBD ():
     cursor = meubd.cursor()
     return meubd, cursor
 
-def consulta_usuario_por_login(login):
+def consulta_usuario_por_login(usuario):
     meubd, cursor = conectaBD()
 
-    query = "SELECT login, email, senha FROM USUARIOS WHERE login = %s"
-    cursor.execute(query, (login,))
+    query = "SELECT usuario, email, senha FROM USUARIOS WHERE usuario = %s"
+    cursor.execute(query, (usuario,))
 
-    usuario = cursor.fetchone()
+    login = cursor.fetchone()
 
     meubd.close()
 
-    if usuario is not None:
-        print("Resultado da consulta:", usuario)
-        return usuario
+    if login is not None:
+        print("Resultado da consulta:", login)
+        return login
     else:
-        print("Nenhum usuário encontrado com o login fornecido.")
+        print("Nenhum usuário encontrado com o usuario fornecido.")
         return None  # Retorna None em vez de uma mensagem de aviso
 
 
-def insere_usuario(id, email, login, senha, data, terminal_usuario):
+def insere_usuario(id, email, usuario, senha, data, terminal_usuario):
     try:
         # Conecta ao banco de dados
         meubd = mysql.connector.connect(
@@ -44,8 +44,8 @@ def insere_usuario(id, email, login, senha, data, terminal_usuario):
         cursor = meubd.cursor()
 
         # Instrução SQL para inserir um novo usuário
-        sql = "INSERT INTO usuarios (id, email, login, senha, data, terminal_usuario) VALUES (%s, %s, %s, %s, %s, %s)"
-        val = (id, email, login, senha, data, terminal_usuario)
+        sql = "INSERT INTO usuarios (id, email, usuario, senha, data, terminal_usuario) VALUES (%s, %s, %s, %s, %s, %s)"
+        val = (id, email, usuario, senha, data, terminal_usuario)
 
         cursor.execute(sql, val)
 

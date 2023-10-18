@@ -23,16 +23,16 @@ while opcao >=1 and opcao <= 8:
     elif opcao == 5:
         criaNovoArquivoJSON(lista)
     elif opcao == 6:
-        login = input("Digite o login do usuário que deseja consultar: ")
-        consulta_usuario_por_login(login)
+        usuario = str(input("Digite o login do usuário que deseja consultar: "))
+        consulta_usuario_por_login(usuario)
     elif opcao == 7:
         id = input('Digite o ID: ')
         email = input('Digite o e-mail: ')
-        login = input('Digite o login: ')
+        usuario = input('Digite o usuario: ')
         senha = input('Digite a senha: ')
         data = datetime.now().isoformat()
         terminal_usuario = (getpass.getuser() + platform.node())
-        insere_usuario(id, email, login, senha, data, terminal_usuario)
+        insere_usuario(id, email, usuario, senha, data, terminal_usuario)
     elif opcao == 8:
         exit()
     opcao = opcoes()
